@@ -45,6 +45,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 1; //added for priority queue
   release(&ptable.lock);
 
   // Allocate kernel stack if possible.
@@ -53,11 +54,11 @@ found:
     return 0;
   }
   sp = p->kstack + KSTACKSIZE;
-  
+
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
   p->tf = (struct trapframe*)sp;
-  
+
   // Set up new context to start executing at forkret,
   // which returns to trapret.
   sp -= 4;
@@ -77,7 +78,7 @@ userinit(void)
 {
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
-  
+
   p = allocproc();
   acquire(&ptable.lock);
   initproc = p;
@@ -107,7 +108,7 @@ int
 growproc(int n)
 {
   uint sz;
-  
+
   sz = proc->sz;
   if(n > 0){
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
@@ -152,7 +153,7 @@ fork(void)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
   np->cwd = idup(proc->cwd);
- 
+
   pid = np->pid;
   np->state = RUNNABLE;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
@@ -256,6 +257,8 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *runState;
+  int runNum;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -263,26 +266,62 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    runState = NULL;
+    runNum = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
+      if(p->state != RUNNABLE) continue;
+      if(runState == NULL && p->priority == 1) runState = p;
+      if(p->priority == 2){
+       function_switch(p);
+       runNum = 1;
+     }
+     if (runState != NULL && runNum == 1){
+       function_switch(runState);
+    }
+
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-      swtch(&cpu->scheduler, proc->context);
-      switchkvm();
+      // proc = p;
+      // switchuvm(p);
+      // p->state = RUNNING;
+      // swtch(&cpu->scheduler, proc->context);
+      // switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
-      proc = 0;
+      // proc = 0;
     }
     release(&ptable.lock);
 
   }
+}
+
+void
+function_switch(struct proc *p)
+{
+  int ind;
+
+  proc = p;
+  switchuvm(p);
+  p->state = RUNNING;
+
+  ind = p - ptable.proc;
+  pstat_global.pid[ind] = p->pid;
+  pstat_global.inuse[ind] = 1;
+
+  if(p->priority == 1){
+    pstat_global.ticksl[ind]++;
+  } else {
+    pstat_global.ticksh[ind]++;
+  }
+
+  swtch(&cpu->scheduler, p->context);
+  pstat_global.inuse[ind] = 0;
+  switchkvm();
+
+  proc = 0;
 }
 
 // Enter scheduler.  Must hold only ptable.lock
@@ -322,7 +361,7 @@ forkret(void)
 {
   // Still holding ptable.lock from scheduler.
   release(&ptable.lock);
-  
+
   // Return to "caller", actually trapret (see allocproc).
 }
 
@@ -425,7 +464,7 @@ procdump(void)
   struct proc *p;
   char *state;
   uint pc[10];
-  
+
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -442,5 +481,3 @@ procdump(void)
     cprintf("\n");
   }
 }
-
-
