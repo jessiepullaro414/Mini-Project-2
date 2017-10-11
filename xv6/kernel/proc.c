@@ -316,9 +316,9 @@ function_switch(struct proc *p)
   pstat_global.inuse[ind] = 1;
 
   if(p->priority == 1){
-    pstat_global.ticksl[ind]++;
+    pstat_global.lticks[ind]++;
   } else {
-    pstat_global.ticksh[ind]++;
+    pstat_global.hticks[ind]++;
   }
 
   swtch(&cpu->scheduler, p->context);
