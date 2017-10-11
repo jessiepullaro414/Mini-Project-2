@@ -45,7 +45,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->priority = 1; //added for priority queue
+  p->priority = 1;
   release(&ptable.lock);
 
   // Allocate kernel stack if possible.
@@ -97,6 +97,8 @@ userinit(void)
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
+  //added
+  acquire(&ptable.lock);
 
   p->state = RUNNABLE;
   release(&ptable.lock);
@@ -269,8 +271,10 @@ scheduler(void)
     runState = NULL;
     runNum = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE) continue;
-      if(runState == NULL && p->priority == 1) runState = p;
+      if(p->state != RUNNABLE)
+        continue;
+      if(runState == NULL && p->priority == 1)
+        runState = p;
       if(p->priority == 2){
        function_switch(p);
        runNum = 1;
