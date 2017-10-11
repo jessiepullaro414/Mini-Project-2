@@ -276,11 +276,11 @@ scheduler(void)
       if(runState == NULL && p->priority == 1)
         runState = p;
       if(p->priority == 2){
-       function_switch(p);
+       func_switch(p);
        runNum = 1;
      }
      if (runState != NULL && runNum == 1){
-       function_switch(runState);
+       func_switch(runState);
     }
 
 
@@ -303,7 +303,7 @@ scheduler(void)
 }
 
 void
-function_switch(struct proc *p)
+func_switch(struct proc *p)
 {
   int ind;
 
