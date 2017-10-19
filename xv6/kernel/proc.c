@@ -5,6 +5,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "pstat.h"
 
 struct {
   struct spinlock lock;
@@ -16,7 +17,7 @@ static struct proc *initproc;
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
-struct pstat *pstat_global;
+struct pstat pstat_global;
 
 static void wakeup1(void *chan);
 
@@ -252,25 +253,25 @@ wait(void)
 void
 func_switch(struct proc *p)
 {
-  int ind;
+  int index;
   acquire(&ptable.lock);
 
   proc = p;
   switchuvm(p);
   p->state = RUNNING;
 
-  ind = p - ptable.proc;
-  pstat_global->pid[ind] = p->pid;
-  pstat_global->inuse[ind] = 1;
+  index = 0;
+  pstat_global.pid[index] = p->pid;
+  pstat_global.inuse[index] = 1;
 
   if(p->priority == 1){
-    pstat_global->lticks[ind]++;
+    pstat_global.lticks[index]++;
   } else {
-    pstat_global->hticks[ind]++;
+    pstat_global.hticks[index]++;
   }
 
   swtch(&cpu->scheduler, p->context);
-  pstat_global->inuse[ind] = 0;
+  pstat_global.inuse[index] = 0;
   switchkvm();
 
   proc = 0;

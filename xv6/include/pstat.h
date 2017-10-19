@@ -10,7 +10,7 @@ struct pstat{
 	int lticks[NPROC];
 };
 
-struct pstat pstat_global;
+//struct pstat pstat_global;
 
 
 

@@ -99,7 +99,7 @@ sys_uptime(void)
 int sys_settickets(void) {
 	return settickets(10);
 }
-
+s
 int sys_getpinfo(void) {
 	return getpinfo();
 }
