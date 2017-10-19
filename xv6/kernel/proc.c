@@ -253,6 +253,7 @@ void
 func_switch(struct proc *p)
 {
   int ind;
+  acquire(&ptable.lock);
 
   proc = p;
   switchuvm(p);
