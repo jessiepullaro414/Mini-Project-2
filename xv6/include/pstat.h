@@ -9,7 +9,9 @@ struct pstat{
 	int hticks[NPROC];
 	int lticks[NPROC];
 };
+
 struct pstat pstat_global;
+
 
 
 #endif // _PSTAT_H_

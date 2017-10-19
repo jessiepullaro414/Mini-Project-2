@@ -16,6 +16,7 @@ static struct proc *initproc;
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
+struct pstat *pstat_global;
 
 static void wakeup1(void *chan);
 
@@ -248,6 +249,32 @@ wait(void)
   }
 }
 
+void
+func_switch(struct proc *p)
+{
+  int ind;
+
+  proc = p;
+  switchuvm(p);
+  p->state = RUNNING;
+
+  ind = p - ptable.proc;
+  pstat_global->pid[ind] = p->pid;
+  pstat_global->inuse[ind] = 1;
+
+  if(p->priority == 1){
+    pstat_global->lticks[ind]++;
+  } else {
+    pstat_global->hticks[ind]++;
+  }
+
+  swtch(&cpu->scheduler, p->context);
+  pstat_global->inuse[ind] = 0;
+  switchkvm();
+
+  proc = 0;
+}
+
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -302,31 +329,6 @@ scheduler(void)
   }
 }
 
-void
-func_switch(struct proc *p)
-{
-  int ind;
-
-  proc = p;
-  switchuvm(p);
-  p->state = RUNNING;
-
-  ind = p - ptable.proc;
-  pstat_global.pid[ind] = p->pid;
-  pstat_global.inuse[ind] = 1;
-
-  if(p->priority == 1){
-    pstat_global.lticks[ind]++;
-  } else {
-    pstat_global.hticks[ind]++;
-  }
-
-  swtch(&cpu->scheduler, p->context);
-  pstat_global.inuse[ind] = 0;
-  switchkvm();
-
-  proc = 0;
-}
 
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state.
