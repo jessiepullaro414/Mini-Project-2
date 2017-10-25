@@ -24,10 +24,8 @@ int dup(int);
 int getpid(void);
 char* sbrk(int);
 int sleep(int);
-int howmanysys();
 int uptime(void);
-int settickets(int);
-int getpinfo(int);
+int howmanysys(void);
 
 // user library functions (ulib.c)
 int stat(char*, struct stat*);
@@ -40,8 +38,8 @@ char* gets(char*, int max);
 uint strlen(char*);
 void* memset(void*, int, uint);
 void* malloc(uint);
-int howmanysys();
 void free(void*);
 int atoi(const char*);
 
 #endif // _USER_H_
+

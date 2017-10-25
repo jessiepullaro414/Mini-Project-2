@@ -3,15 +3,11 @@
 
 #include "param.h"
 
-struct pstat{
-	int inuse[NPROC];
-	int pid[NPROC];
-	int hticks[NPROC];
-	int lticks[NPROC];
+struct pstat {
+	int inuse[NPROC];  // 1 if in use, 0 otherwise
+	int pid[NPROC];    // pid of process
+	int hticks[NPROC]; // number of ticks in high priority queue
+	int lticks[NPROC]; // number of ticks in low priority queue
 };
-
-//struct pstat pstat_global;
-
-
 
 #endif // _PSTAT_H_

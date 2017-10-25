@@ -10,11 +10,11 @@ USER_PROGS := \
 	ln\
 	ls\
 	mkdir\
+	mini_1_driver\
 	rm\
 	sh\
 	stressfs\
 	tester\
-	howmanysys\
 	usertests\
 	wc\
 	zombie
@@ -103,3 +103,4 @@ user/%.d: user/%.c
 user/%.d: user/%.S
 	$(CC) $(CPPFLAGS) $(USER_CPPFLAGS) $(ASFLAGS) $(USER_ASFLAGS) \
 		-M -MG $< -MF $@ -MT $@ -MT $(<:.S=.o)
+

@@ -6,6 +6,8 @@
 #include "proc.h"
 #include "sysfunc.h"
 
+int numCalls = 0;
+
 int
 sys_fork(void)
 {
@@ -60,7 +62,7 @@ sys_sleep(void)
 {
   int n;
   uint ticks0;
-
+  
   if(argint(0, &n) < 0)
     return -1;
   acquire(&tickslock);
@@ -76,30 +78,21 @@ sys_sleep(void)
   return 0;
 }
 
-extern int numSysIDs;
-
-int
-sys_howmanysys(void)
-{
-  return numSysIDs;
-}
 // return how many clock tick interrupts have occurred
 // since boot.
 int
 sys_uptime(void)
 {
   uint xticks;
-
+  
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
   return xticks;
 }
 
-int sys_settickets(void) {
-	return sys_settickets();
-}
-
-int sys_getpinfo(void) {
-	return sys_getpinfo();
+int
+sys_howmanysys(void)
+{
+  return numCalls;
 }

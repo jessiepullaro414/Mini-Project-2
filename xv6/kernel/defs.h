@@ -110,7 +110,6 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 
-
 // swtch.S
 void            swtch(struct context**, struct context*);
 
@@ -139,6 +138,7 @@ int             argstr(int, char**);
 int             fetchint(struct proc*, uint, int*);
 int             fetchstr(struct proc*, uint, char**);
 void            syscall(void);
+extern int 	numCalls;
 
 // timer.c
 void            timerinit(void);

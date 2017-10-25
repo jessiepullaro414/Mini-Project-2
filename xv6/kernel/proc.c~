@@ -67,6 +67,7 @@ found:
   p->numTickets = 1;
   c0++;
   q0[c0] = p;
+  pstat_global.priority[p->pid] = 0;
   pstat_global.lticks[p->pid] = 0;
   pstat_global.hticks[p->pid] = 0;
   pstat_global.pid[p->pid] = p->pid;
@@ -327,6 +328,7 @@ scheduler(void)
       pstat_global.hticks[p->pid]++;
       c1++;
       proc->priority = proc->priority+1;
+      pstat_global.priority[proc->pid] = proc->priority;
       q1[c1] = proc;
 
       q0[i] = NULL;
